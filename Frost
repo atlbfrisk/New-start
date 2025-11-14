@@ -29,19 +29,14 @@ for _, data in ipairs(models) do
     part.CanCollide = false
     limb.Anchored = false
 
-    -- === ПОЗИЦИОНИРОВАНИЕ ===
     if data.limb == "Torso" then
         part.CFrame = limb.CFrame * CFrame.new(-0.56, 0.2, 0)
-
     elseif data.limb == "Head" then
         part.CFrame = limb.CFrame * CFrame.new(-0.23, 0.19, 0)
-
     elseif data.limb == "Left Arm" then
         part.CFrame = limb.CFrame * CFrame.new(0, 0.2, 0)
-
     elseif data.limb == "Left Leg" then
         part.CFrame = limb.CFrame * CFrame.new(0, 0, 0)
-
     else
         part.CFrame = limb.CFrame
     end
@@ -52,22 +47,20 @@ for _, data in ipairs(models) do
     weld.Parent = limb
 end
 
-wait (2)
+wait(0.5)
 
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- Путь к мечу текущего игрока
 local swordPath = workspace:WaitForChild("Players")
     :WaitForChild(player.Name)
     :WaitForChild("GTSword")
     :WaitForChild("Sword")
 
--- Изменяем цвет и материал
-swordPath.Color = Color3.fromRGB(0, 255, 255) -- голубой
+swordPath.Color = Color3.fromRGB(0, 255, 255)
 swordPath.Material = Enum.Material.CrackedLava
 
-wait(1)
+wait(0.5)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -76,14 +69,14 @@ local shield = workspace:WaitForChild("Players")
     :WaitForChild("GTShield")
     :WaitForChild("Shield")
 
-shield.Color = Color3.fromRGB(0, 170, 255)  -- голубой (можешь заменить)
+shield.Color = Color3.fromRGB(0, 170, 255)
 shield.Transparency = 0.6
 shield.Size = Vector3.new(0.7, 3.5, 2.5)
-wait(1)
+
+wait(0.5)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
--- TextLabel
 local textLabel = workspace:WaitForChild("Players")
     :WaitForChild(player.Name)
     :WaitForChild("Head")
@@ -91,9 +84,10 @@ local textLabel = workspace:WaitForChild("Players")
     :WaitForChild("Frame")
     :WaitForChild("TextLabel")
 
-textLabel.Text = player.Name  -- ставим имя
+textLabel.Text = player.Name
 textLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
-wait(1)
+
+wait(0.5)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
@@ -102,17 +96,16 @@ local bar = workspace.Players[player.Name]
 
 bar.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
 
-wait(1)
+wait(0.5)
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 local uiGradient = workspace.Players[player.Name]
     .Head.Display.Frame.Health.Bar:WaitForChild("UIGradient")
 
--- Настраиваем плавный градиент
 uiGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),       -- начало черное
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 255))    -- конец голубой
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 255))
 })
 
 local Players = game:GetService("Players")
