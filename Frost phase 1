@@ -1,0 +1,192 @@
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+local animationReplacementsInStorage = {
+    Slash1 = "rbxassetid://15059818640",
+    Slash2 = "rbxassetid://14938795381", 
+    Slash3 = "rbxassetid://15059822491",
+    Slash4 = "rbxassetid://15059826061",
+    Slash5 = "rbxassetid://15801955350"
+}
+
+local function replaceStorageAnimations()
+    local gtfriskFolder = ReplicatedStorage:WaitForChild("Animations"):WaitForChild("GTFrisk")
+    
+    for animationName, newAnimationId in pairs(animationReplacementsInStorage) do
+        local animationPath = gtfriskFolder:WaitForChild(animationName)
+        if animationPath and animationPath:IsA("Animation") then
+            animationPath.AnimationId = newAnimationId
+            print("Заменена анимация " .. animationName .. " на " .. newAnimationId)
+        else
+            warn("Ошибка замены анимации: " .. animationName)
+        end
+    end
+end
+
+local models = {
+    {name = "LeftLegIce.rbxm", url = "https://github.com/atlbfrisk/New-start/raw/refs/heads/main/LeftLegIce.rbxm", limb = "Left Leg"},
+    {name = "LeftArmIce.rbxm", url = "https://github.com/atlbfrisk/New-start/raw/refs/heads/main/LeftArmIce.rbxm", limb = "Left Arm"},
+    {name = "TorsoIce.rbxm", url = "https://github.com/atlbfrisk/New-start/raw/refs/heads/main/TorsoIce.rbxm", limb = "Torso"},
+    {name = "HeadIce.rbxm", url = "https://github.com/atlbfrisk/New-start/raw/refs/heads/main/HeadIce.rbxm", limb = "Head"},
+}
+
+local function applyVisualChanges(character)
+    for _, data in ipairs(models) do
+        local success = pcall(function()
+            writefile(data.name, game:HttpGet(data.url))
+            local obj = game:GetObjects(getcustomasset(data.name))[1]
+            obj.Parent = character
+
+            local limb = character:FindFirstChild(data.limb)
+            if not limb or not limb:IsA("BasePart") then return end
+
+            local part
+            if obj:IsA("BasePart") then
+                part = obj
+            else
+                part = obj:FindFirstChildWhichIsA("BasePart")
+            end
+            if not part then return end
+
+            part.Anchored = false
+            part.CanCollide = false
+            limb.Anchored = false
+
+            local offsets = {
+                ["Torso"] = CFrame.new(-0.56, 0.2, 0),
+                ["Head"] = CFrame.new(-0.23, 0.19, 0),
+                ["Left Arm"] = CFrame.new(0, 0.2, 0),
+                ["Left Leg"] = CFrame.new(0, 0, 0)
+            }
+            
+            part.CFrame = limb.CFrame * (offsets[data.limb] or CFrame.new())
+
+            local weld = Instance.new("WeldConstraint")
+            weld.Part0 = limb
+            weld.Part1 = part
+            weld.Parent = limb
+        end)
+        
+        if not success then
+            warn("Ошибка загрузки модели: " .. data.name)
+        end
+    end
+
+    wait(0.5)
+
+    local swordSuccess, sword = pcall(function()
+        return workspace:WaitForChild("Players"):WaitForChild(player.Name):WaitForChild("GTSword"):WaitForChild("Sword")
+    end)
+    if swordSuccess and sword then
+        sword.Color = Color3.fromRGB(0, 255, 255)
+        sword.Material = Enum.Material.CrackedLava
+    end
+
+    wait(0.5)
+
+    local shieldSuccess, shield = pcall(function()
+        return workspace:WaitForChild("Players"):WaitForChild(player.Name):WaitForChild("GTShield"):WaitForChild("Shield")
+    end)
+    if shieldSuccess and shield then
+        shield.Color = Color3.fromRGB(0, 170, 255)
+        shield.Transparency = 0.6
+        shield.Size = Vector3.new(0.7, 3.5, 2.5)
+    end
+
+    wait(0.5)
+
+    local displaySuccess, display = pcall(function()
+        return workspace.Players[player.Name].Head.Display.Frame
+    end)
+    
+    if displaySuccess and display then
+        local textLabel = display:WaitForChild("TextLabel")
+        textLabel.Text = player.Name
+        textLabel.TextColor3 = Color3.fromRGB(0, 255, 255)
+
+        local bar = display:WaitForChild("Ext1"):WaitForChild("Bar")
+        bar.BackgroundColor3 = Color3.fromRGB(0, 255, 255)
+
+        local healthBar = display:WaitForChild("Health"):WaitForChild("Bar")
+        local uiGradient = healthBar:WaitForChild("UIGradient")
+        uiGradient.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(0, 0, 0)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(0, 255, 255))
+        })
+        healthBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    end
+end
+
+local animationReplacements = {
+    [13658815852] = 13038341252,
+    [13653010808] = 15102375199
+}
+
+local function setupAnimationSystem(character)
+    local humanoid = character:WaitForChild("Humanoid")
+    local animator = humanoid:WaitForChild("Animator")
+    
+    local replacementTracks = {}
+    for originalId, replacementId in pairs(animationReplacements) do
+        local animation = Instance.new("Animation")
+        animation.AnimationId = "http://www.roblox.com/asset/?id=" .. replacementId
+        replacementTracks[originalId] = animator:LoadAnimation(animation)
+    end
+    
+    local function onAnimationPlayed(animationTrack)
+        local animationId = animationTrack.Animation.AnimationId
+        local id = tonumber(animationId:match("%d+"))
+        if id and animationReplacements[id] and replacementTracks[id] then
+            animationTrack:Stop()
+            replacementTracks[id]:Play()
+        end
+    end
+    
+    animator.AnimationPlayed:Connect(onAnimationPlayed)
+    
+    local function setupButtonListener()
+        local success, gui = pcall(function()
+            return player:WaitForChild("PlayerGui"):WaitForChild("Pro"):WaitForChild("Frame"):WaitForChild("Specials"):WaitForChild("5"):WaitForChild("TextButton")
+        end)
+        
+        if success and gui then
+            local buttonAnimation = Instance.new("Animation")
+            buttonAnimation.AnimationId = "http://www.roblox.com/asset/?id=13183574575"
+            local buttonTrack = animator:LoadAnimation(buttonAnimation)
+            
+            gui.MouseButton1Click:Connect(function()
+                buttonTrack:Stop()
+                buttonTrack:Play()
+            end)
+        else
+            wait(5)
+            setupButtonListener()
+        end
+    end
+    
+    setupButtonListener()
+    
+    return {
+        animator = animator,
+        replacementTracks = replacementTracks
+    }
+end
+
+replaceStorageAnimations()
+
+local function characterSetup(character)
+    applyVisualChanges(character)
+    setupAnimationSystem(character)
+end
+
+if player.Character then
+    characterSetup(player.Character)
+end
+
+player.CharacterAdded:Connect(characterSetup)
+
+player.CharacterRemoving:Connect(function()
+end)
+
+print("Все системы загружены и работают!")
